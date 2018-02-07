@@ -6,6 +6,7 @@ namespace Nancy.Bootstrappers.AspectCore.Tests {
     public class HomeModule : NancyModule {
         public HomeModule(IService1 service1) {
             Get("/", args => get(service1));
+            Get("/Nice", args => "Nice");
         }
 
         private dynamic get(IService1 service1) {

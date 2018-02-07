@@ -3,7 +3,7 @@
 namespace Nancy.Bootstrappers.AspectCore.Tests.Services {
    
     public interface IService1 {
-        [LoggerInterceptor1]
+       // [LoggerInterceptor1]
         void Display();
     }
 

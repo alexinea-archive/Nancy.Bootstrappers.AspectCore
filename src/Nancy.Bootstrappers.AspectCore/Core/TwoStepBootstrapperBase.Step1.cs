@@ -58,7 +58,7 @@ namespace Nancy.Bootstrappers.AspectCore.Core {
 
             FavIconInitialize(ApplicationPipelines);
 
-           // GetDiagnostics(ApplicationResolver).Initialize(ApplicationPipelines);
+            GetDiagnostics(ApplicationResolver).Initialize(ApplicationPipelines);
 
             _initialised = true;
         }

@@ -5,6 +5,8 @@ using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.AspectCore.Core;
 using Nancy.Configuration;
 using Nancy.Diagnostics;
+using Nancy.Json;
+using Nancy.Xml;
 using NancyLifetime = Nancy.Bootstrapper.Lifetime;
 using AspectCoreLifetime = AspectCore.Injector.Lifetime;
 
@@ -50,16 +52,16 @@ namespace Nancy.Bootstrappers.AspectCore {
         }
 
         protected override void RegisterCollectionTypes(IServiceContainer services, IEnumerable<CollectionTypeRegistration> collectionTypeRegistrations) {
-            foreach (var typeRegistration in collectionTypeRegistrations) {
-                foreach (var implementationType in typeRegistration.ImplementationTypes) {
-                    switch (typeRegistration.Lifetime) {
+            foreach (var collectionTypeRegistration in collectionTypeRegistrations) {
+                foreach (var implementationType in collectionTypeRegistration.ImplementationTypes) {
+                    switch (collectionTypeRegistration.Lifetime) {
                         case NancyLifetime.Transient: {
-                            RegisterAsTransient(services, typeRegistration.RegistrationType, implementationType);
+                            RegisterAsTransient(services, collectionTypeRegistration.RegistrationType, implementationType);
                             break;
                         }
 
                         case NancyLifetime.Singleton: {
-                            RegisterAsSingleton(services, typeRegistration.RegistrationType, implementationType);
+                            RegisterAsSingleton(services, collectionTypeRegistration.RegistrationType, implementationType);
                             return;
                         }
 
@@ -75,9 +77,9 @@ namespace Nancy.Bootstrappers.AspectCore {
             }
         }
 
-        protected override void RegisterInstances(IServiceContainer servoces, IEnumerable<InstanceRegistration> instanceRegistrations) {
+        protected override void RegisterInstances(IServiceContainer services, IEnumerable<InstanceRegistration> instanceRegistrations) {
             foreach (var instanceRegistration in instanceRegistrations) {
-                servoces.AddInstance(instanceRegistration.RegistrationType, instanceRegistration.Implementation);
+                services.AddInstance(instanceRegistration.RegistrationType, instanceRegistration.Implementation);
             }
         }
 
@@ -98,6 +100,15 @@ namespace Nancy.Bootstrappers.AspectCore {
         }
 
         protected override void RegisterNancyEnvironment(IServiceContainer services) {
+            //临时代码
+            services.AddType<INancyDefaultConfigurationProvider, DefaultDiagnosticsConfigurationProvider>(AspectCoreLifetime.Singleton);
+            services.AddType<INancyDefaultConfigurationProvider, DefaultJsonConfigurationProvider>(AspectCoreLifetime.Singleton);
+            services.AddType<INancyDefaultConfigurationProvider, DefaultXmlConfigurationProvider>(AspectCoreLifetime.Singleton);
+            services.AddType<INancyDefaultConfigurationProvider, DefaultGlobalizationConfigurationProvider>(AspectCoreLifetime.Singleton);
+            services.AddType<INancyDefaultConfigurationProvider, DefaultRouteConfigurationProvider>(AspectCoreLifetime.Singleton);
+            services.AddType<INancyDefaultConfigurationProvider, DefaultStaticContentConfigurationProvider>(AspectCoreLifetime.Singleton);
+            services.AddType<INancyDefaultConfigurationProvider, DefaultTraceConfigurationProvider>(AspectCoreLifetime.Singleton);
+            services.AddType<INancyDefaultConfigurationProvider, DefaultViewConfigurationProvider>(AspectCoreLifetime.Singleton);
             services.AddDelegate<INancyEnvironment>(provider => provider.Resolve<INancyEnvironmentConfigurator>().ConfigureEnvironment(Configure));
         }
 
@@ -150,7 +161,11 @@ namespace Nancy.Bootstrappers.AspectCore {
         }
 
         protected override IEnumerable<IRequestStartup> RegisterAndGetRequestStartupTasks(IServiceResolver resolver, Type[] requestStartupTypes) {
-            throw new NotImplementedException();
+            Console.WriteLine("Start type");
+            foreach (var type in requestStartupTypes) {
+                Console.WriteLine(type);
+                yield return resolver.Resolve(type) as IRequestStartup;
+            }
         }
 
         protected IServiceResolver GetConfiguredRequestContainer(NancyContext context) {
